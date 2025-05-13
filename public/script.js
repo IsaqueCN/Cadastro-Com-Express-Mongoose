@@ -158,12 +158,12 @@ document.getElementById('deleteBtn').addEventListener('click', () => {
 });
 
 document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
-    closePopup('popupCancelamento'); // Fecha o popup de confirmação
+    closePopup('confirmDeletePopup'); // fecha o popup de confirmação
 
     const userAtual = await pegarUsuarioAtual();
     const data = await deletarCadastro(userAtual.nome, userAtual.senha);
 
-    showPopup('PopupTempo', data.result || data.message); // Mostra resultado da operação
+    showPopup('PopupTempo', data.result || data.message); // mostra resultado
 
     if (data.success) {
         setTimeout(() => {
