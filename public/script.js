@@ -154,7 +154,7 @@ document.getElementById('updateBtn').addEventListener('click', async () => { // 
 });
 
 document.getElementById('deleteBtn').addEventListener('click', () => {
-    showPopup('popupCancelamento'); // Mostra o novo popup de confirmação
+    showPopup('confirmDeletePopup'); // Mostra o novo popup de confirmação
 });
 
 document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
