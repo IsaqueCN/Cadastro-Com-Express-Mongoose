@@ -128,7 +128,7 @@ router.post("/", async (req, res) => { // Quando alguem registrar
     try {
         let result = await Cadastro.insertOne(req.body);
         req.session.objectID = result._id
-        res.status(200).json({ "success": true, "result": result })
+        res.status(200).json({ "success": true, "result": "Cadastro bem sucedido." })
     } catch (err) {
         res.status(400).json({ "success": false, "message": uniqueErrorHandler(err) || validationErrorHandler(err) || err })
     }
