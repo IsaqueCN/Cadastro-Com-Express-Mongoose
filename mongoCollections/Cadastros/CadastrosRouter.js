@@ -103,7 +103,8 @@ router.get("/relatorio", async (req, res) => {
                 (acc, cur) => ({ ...acc, [cur.categoria]: cur.count }), {}
             ),
             earliestCadastro: report.datasCadastro[0]?.earliest || null,
-            latestCadastro: report.datasCadastro[0]?.latest || null
+            latestCadastro: report.datasCadastro[0]?.latest || null,
+            nomesOrdenados: report.nomesOrdenados.map(c => c.nome)
         }
 
         res.status(200).json({ success: true, result: resultado })
