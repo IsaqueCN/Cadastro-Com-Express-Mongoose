@@ -31,79 +31,7 @@ router.get("/", async (req, res) => {
     res.status(200).json({ "success": true, "result": result })
 })
 
-router.get("/:nome", async (req, res) => {
-    let result = await Cadastro.find({nome: req.params.nome}, {email: 0, senha: 0, __v: 0});
-    if (result.length == 0)
-        return res.status(400).json({"success": false, "message": "Cadastro não encontrado."});
-
-    res.status(200).json({"success": true, "result": result});
-})
-
-router.post("/", async (req, res) => { // Quando alguem registrar
-    try {
-        let result = await Cadastro.insertOne(req.body);
-        req.session.objectID = result._id
-        res.status(200).json({ "success": true, "result": result })
-    } catch (err) {
-        res.status(400).json({ "success": false, "message": uniqueErrorHandler(err) || validationErrorHandler(err) || err })
-    }
-})
-
-router.post("/login", async (req, res) => { // Quando alguem fazer login
-    try {
-        if (!req.body || (!req.body.nome && !req.body.email) || !req.body.senha)
-            return res.status(400).json({"success": false, "message": "Os campos 'nome' e 'senha' são obrigatórios."});
-
-        let result = await Cadastro.find(req.body);
-        if (result.length == 0)
-            return res.status(400).json({"success": false, "message": "Credenciais inválidas."});
-
-        req.session.objectID = result[0]._id;
-        res.status(200).json({"success": true, "result": "Login bem sucedido."});
-    } catch (err) {
-        res.status(400).json({"success": false, "message": err.message});
-    }
-})
-
-router.delete("/", async (req, res) => {
-    try {
-        if (!req.body || !req.body.nome || !req.body.senha)
-            return res.status(400).json({ "success": false, "message": "Campos 'nome' e 'senha' são obrigatórios" })
-
-        let result = await Cadastro.deleteOne(req.body);
-        if (result.deletedCount == 0) // Não removeu nada
-            return res.status(400).json({"success": false, "message": "Cadastro não encontrado."})
-        
-        res.status(200).json({ "success": true, "result": "Cadastro removido com sucesso." })
-    } catch (err) {
-        res.status(400).json({ "success": false, "message": err.message })
-    }
-})
-
-router.put("/", (req, res) => {
-    return res.status(400).json({"success": false, "message": "Parametro 'nome' é obrigatório. (Ex /cadastros/nomeAqui)"})
-})
-
-router.put("/:nome", authLock, async (req, res) => {
-    try {
-        let login = await Cadastro.findById(req.session.objectID);
-        if (!login || login.nome.toLowerCase() != req.params.nome.toLowerCase()) // Permite apenas o propietário da conta alterar ela
-            return res.status(400).json({"success": false, "message": "Sem autorização."});
-
-        let result = await Cadastro.updateOne({nome: req.params.nome}, req.body, {runValidators: true})
-        
-        if (!result.acknowledged)
-            return res.status(400).json({"success": false, "message": "Campos incorretos, verifique o nome dos campos."})
-        else if (result.matchedCount == 0)
-            return res.status(400).json({"success": false, "message": "Cadastro não encontrado."})
-
-        res.status(200).json({"success": true, "result": "Cadastro atualizado com sucesso."})
-    } catch (err) {
-        res.status(400).json({"success": false, "message": uniqueErrorHandler(err) || validationErrorHandler(err) || err})
-    }
-})
-
-router.get("/relatorio", authLock, async (req, res) => {
+router.get("/relatorio", async (req, res) => {
     try {
         const [report] = await Cadastro.aggregate([
             {
@@ -180,6 +108,78 @@ router.get("/relatorio", authLock, async (req, res) => {
             success: false,
             message: "Erro ao gerar relatório\n" + err.message
         })
+    }
+})
+
+router.get("/:nome", async (req, res) => {
+    let result = await Cadastro.find({nome: req.params.nome}, {email: 0, senha: 0, __v: 0});
+    if (result.length == 0)
+        return res.status(400).json({"success": false, "message": "Cadastro não encontrado."});
+
+    res.status(200).json({"success": true, "result": result});
+})
+
+router.post("/", async (req, res) => { // Quando alguem registrar
+    try {
+        let result = await Cadastro.insertOne(req.body);
+        req.session.objectID = result._id
+        res.status(200).json({ "success": true, "result": result })
+    } catch (err) {
+        res.status(400).json({ "success": false, "message": uniqueErrorHandler(err) || validationErrorHandler(err) || err })
+    }
+})
+
+router.post("/login", async (req, res) => { // Quando alguem fazer login
+    try {
+        if (!req.body || (!req.body.nome && !req.body.email) || !req.body.senha)
+            return res.status(400).json({"success": false, "message": "Os campos 'nome' e 'senha' são obrigatórios."});
+
+        let result = await Cadastro.find(req.body);
+        if (result.length == 0)
+            return res.status(400).json({"success": false, "message": "Credenciais inválidas."});
+
+        req.session.objectID = result[0]._id;
+        res.status(200).json({"success": true, "result": "Login bem sucedido."});
+    } catch (err) {
+        res.status(400).json({"success": false, "message": err.message});
+    }
+})
+
+router.delete("/", async (req, res) => {
+    try {
+        if (!req.body || !req.body.nome || !req.body.senha)
+            return res.status(400).json({ "success": false, "message": "Campos 'nome' e 'senha' são obrigatórios" })
+
+        let result = await Cadastro.deleteOne(req.body);
+        if (result.deletedCount == 0) // Não removeu nada
+            return res.status(400).json({"success": false, "message": "Cadastro não encontrado."})
+        
+        res.status(200).json({ "success": true, "result": "Cadastro removido com sucesso." })
+    } catch (err) {
+        res.status(400).json({ "success": false, "message": err.message })
+    }
+})
+
+router.put("/", (req, res) => {
+    return res.status(400).json({"success": false, "message": "Parametro 'nome' é obrigatório. (Ex /cadastros/nomeAqui)"})
+})
+
+router.put("/:nome", authLock, async (req, res) => {
+    try {
+        let login = await Cadastro.findById(req.session.objectID);
+        if (!login || login.nome.toLowerCase() != req.params.nome.toLowerCase()) // Permite apenas o propietário da conta alterar ela
+            return res.status(400).json({"success": false, "message": "Sem autorização."});
+
+        let result = await Cadastro.updateOne({nome: req.params.nome}, req.body, {runValidators: true})
+        
+        if (!result.acknowledged)
+            return res.status(400).json({"success": false, "message": "Campos incorretos, verifique o nome dos campos."})
+        else if (result.matchedCount == 0)
+            return res.status(400).json({"success": false, "message": "Cadastro não encontrado."})
+
+        res.status(200).json({"success": true, "result": "Cadastro atualizado com sucesso."})
+    } catch (err) {
+        res.status(400).json({"success": false, "message": uniqueErrorHandler(err) || validationErrorHandler(err) || err})
     }
 })
 
