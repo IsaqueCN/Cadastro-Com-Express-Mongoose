@@ -86,6 +86,10 @@ router.get("/relatorio", async (req, res) => {
                             }
                         },
                         { $project: { _id: 0, earliest: 1, latest: 1 } }
+                    ],
+                    nomesOrdenados: [
+                        { $project: { _id: 0, nome: 1 } },
+                        { $sort: { nome: 1 } }
                     ]
                 }
             }
