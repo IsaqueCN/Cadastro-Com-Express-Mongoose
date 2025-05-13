@@ -102,4 +102,85 @@ router.put("/:nome", authLock, async (req, res) => {
         res.status(400).json({"success": false, "message": uniqueErrorHandler(err) || validationErrorHandler(err) || err})
     }
 })
+
+router.get("/relatorio", authLock, async (req, res) => {
+    try {
+        const [report] = await Cadastro.aggregate([
+            {
+                $facet: {
+                    totalCadastros: [
+                        { $count: "count" }
+                    ],
+                    emailsPorDominio: [
+                        {
+                            $group: {
+                                _id: { $arrayElemAt: [ { $split: ["$email", "@"] }, 1 ] },
+                                quantidade: { $sum: 1 }
+                            }
+                        },
+                        { $project: { dominio: "$_id", quantidade: 1, _id: 0 } }
+                    ],
+                    mediaTamanhoDescricao: [
+                        { $match: { descricao: { $exists: true, $ne: null } } },
+                        { $project: { tamanho: { $strLenCP: "$descricao" } } },
+                        {
+                            $group: {
+                                _id: null,
+                                media: { $avg: "$tamanho" }
+                            }
+                        },
+                        { $project: { _id: 0, media: 1 } }
+                    ],
+                    usuariosComImagem: [
+                        {
+                            $group: {
+                                _id: {
+                                    $cond: [
+                                        { $or: [
+                                            { $eq: ["$imageURL", null] },
+                                            { $eq: ["$imageURL", ""] }
+                                        ] },
+                                        "semImagem",
+                                        "comImagem"
+                                    ]
+                                },
+                                count: { $sum: 1 }
+                            }
+                        },
+                        { $project: { categoria: "$_id", count: 1, _id: 0 } }
+                    ],
+                    datasCadastro: [
+                        {
+                            $group: {
+                                _id: null,
+                                earliest: { $min: { $toDate: "$_id" } },
+                                latest: { $max: { $toDate: "$_id" } }
+                            }
+                        },
+                        { $project: { _id: 0, earliest: 1, latest: 1 } }
+                    ]
+                }
+            }
+        ])
+
+        const resultado = {
+            totalCadastros: report.totalCadastros[0]?.count ?? 0,
+            emailsPorDominio: report.emailsPorDominio,
+            mediaTamanhoDescricao: report.mediaTamanhoDescricao[0]?.media ?? 0,
+            usuariosComImagem: report.usuariosComImagem.reduce(
+                (acc, cur) => ({ ...acc, [cur.categoria]: cur.count }), {}
+            ),
+            earliestCadastro: report.datasCadastro[0]?.earliest || null,
+            latestCadastro: report.datasCadastro[0]?.latest || null
+        }
+
+        res.status(200).json({ success: true, result: resultado })
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Erro ao gerar relatório\n" + err.message
+        })
+    }
+})
+
 module.exports = router;
