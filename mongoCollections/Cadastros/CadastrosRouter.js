@@ -65,7 +65,7 @@ router.get("/relatorio", async (req, res) => {
                                 _id: {
                                     $cond: [
                                         { $or: [
-                                            { $eq: ["$imageURL", null] },
+                                            { $eq: [{ $ifNull: ["$imageURL", null] }, null] },
                                             { $eq: ["$imageURL", ""] }
                                         ] },
                                         "semImagem",
