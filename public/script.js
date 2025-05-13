@@ -153,13 +153,23 @@ document.getElementById('updateBtn').addEventListener('click', async () => { // 
     } 
 });
 
-document.getElementById('deleteBtn').addEventListener('click', async () => { // Deletar perfil
+document.getElementById('deleteBtn').addEventListener('click', () => {
+    showPopup('popupCancelamento'); // Mostra o novo popup de confirmação
+});
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+    closePopup('popupCancelamento'); // Fecha o popup de confirmação
+
     const userAtual = await pegarUsuarioAtual();
     const data = await deletarCadastro(userAtual.nome, userAtual.senha);
-    showPopup('PopupTempo', data.result || data.message);
-    if (data.success){
-        setTimeout(() => {window.location.reload();}, 3000);
-    } 
+
+    showPopup('PopupTempo', data.result || data.message); // Mostra resultado da operação
+
+    if (data.success) {
+        setTimeout(() => {
+            window.location.reload();
+        }, 3000);
+    }
 });
 
 document.getElementById('listBtn').addEventListener('click', async () => { // Lista de cadastros
