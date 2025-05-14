@@ -148,9 +148,7 @@ document.getElementById('updateBtn').addEventListener('click', async () => { // 
 
     const data = await atualizarPerfil(body);
     showPopup('PopupTempo', data.result || data.message);
-    if (data.success){
-        setTimeout(() => {window.location.reload();}, 3000);
-    } 
+    setTimeout(() => {window.location.reload();}, 3000);
 });
 
 document.getElementById('deleteBtn').addEventListener('click', () => {
